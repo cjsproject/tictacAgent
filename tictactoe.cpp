@@ -91,16 +91,19 @@ void display()
 		}
 }
 
-bool validateMove(int box){
-	cout << square[box] << '\n';
-
-	if (box < 0 || box > 8)
-		return false;
-
-	else if (square[box] == 'X' || square[box] == 'Y')
-		return false;
-
-	return true;
+int validateMove(int box){
+	cin >> box;
+	while (true){
+		if ((box < 0 || box > 8) ||  (square[box] == 'X' || square[box] == 'Y')){
+			cout << "please enter a valid tile [0, 8]" << '\n';
+			cin >> box;
+			cin.clear();
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			continue;
+		}
+		break;
+	}
+	return box;
 }
 
 int main()
@@ -114,12 +117,8 @@ int main()
 
 		cout<< "\n Player " << player1 << "Enter the Box";
 
-		while (!validateMove(box)){
-			cin >> box;
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		}
-		
+		box = validateMove(box);
+
 		mark(player1, box);
 		display();
 
@@ -138,15 +137,9 @@ int main()
 
 		cout<< "\n Player " << player2 << "Enter the Box";
 		
-		cin >> box;
+		box = validateMove(box);
 
-		while (!validateMove(box)){
-			cin >> box;
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
-		}
-
-		mark ( player2, box);
+		mark (player2, box);
 		display();
 		
 		result =checkwin();	
