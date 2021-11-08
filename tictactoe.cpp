@@ -1,6 +1,9 @@
 #include <iostream>
 #include <limits>
 
+#include <stdlib.h>
+#include <time.h>
+
 using namespace std;
 char square[9] = {'0','1','2','3','4','5','6','7','8'};
 
@@ -91,14 +94,34 @@ void display()
 		}
 }
 
-int validateMove(int box){
-	cin >> box;
+int intakeMove(int p){
+	int box;
+
+	if (p == 1){
+		cin >> box;
+		cin.clear();
+		cin.ignore(numeric_limits<streamsize>::max(), '\n');
+	}
+	else if (p == 2){
+		srand(time(NULL));
+		box = rand() % 9;
+	}
+
+	return box;
+
+}
+
+int validateMove(int p){
+
+	int box;
+
+	box = intakeMove(p);
+	cout << box << '\n';
 	while (true){
 		if ((box < 0 || box > 8) ||  (square[box] == 'X' || square[box] == 'Y')){
+			cout << box << '\n';
 			cout << "please enter a valid tile [0, 8]" << '\n';
-			cin >> box;
-			cin.clear();
-			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			box = intakeMove(p);
 			continue;
 		}
 		break;
@@ -117,7 +140,7 @@ int main()
 
 		cout<< "\n Player " << player1 << "Enter the Box";
 
-		box = validateMove(box);
+		box = validateMove(player1);
 
 		mark(player1, box);
 		display();
@@ -135,9 +158,9 @@ int main()
 			break;
 		}
 
-		cout<< "\n Player " << player2 << "Enter the Box";
+		cout<< "\n AI Player " << player2 << " Enters the Box";
 		
-		box = validateMove(box);
+		box = validateMove(player2);
 
 		mark (player2, box);
 		display();
