@@ -6,7 +6,8 @@
 #include <time.h>
 
 using namespace std;
-char square[9] = {'0','1','2','3','4','5','6','7','8'};
+char sqr[9] = {'0','1','2','3','4','5','6','7','8'};
+vector<char> square(sqr, sqr + 9);
 
 
 int checkwin()
@@ -81,10 +82,10 @@ void mark(int player, int box)
 		square[box] = 'Y';
 }
 
-void display()
+void display(vector<char> sq = square)
 {
 	for(int i=0; i<9; i++){
-		cout << square[i] << "\t";
+		cout << sq[i] << "\t";
 		if (i == 2 || i== 5 || i==8)
 			cout<<"\n"; 
 	}
@@ -94,22 +95,23 @@ void minim(){return;}
 
 void maxim(){return;}
 
-int eval()
+int eval(int p)
 {
-	/*evaluates current board score*/
+	/*evaluates end state of certain tree. ie win/lose/draw state*/
+
+
 	return 0;
 
 }
 
-vector<int> get_empty()
+vector<int> get_empty(vector<char> sq = square)
 {
-
 	vector<int> eboxes;
-	for (int i=0; i < 9; i++){
-		if (square[i] != 'X' && square[i] != 'Y')
-			eboxes.push_back(square[i] - '0'); // converts ascii int value to numeric.
+	for (int i=0; i < 9; i++)
+	{
+		if (sq[i] != 'X' && sq[i] != 'Y')
+			eboxes.push_back(sq[i] - '0'); // converts ascii int value to numeric.
 	}
-
 	return eboxes;
 }
 
@@ -128,7 +130,46 @@ int intakeMove(int p)
 	else if (p == 2)
 	{
 		srand(time(NULL));
-		box = rand() % 9;
+
+		vector<int> esq = get_empty();
+		int states = int(esq.size());
+		// attempt at acquiring all next board states
+		// gather array of board states, display them all at each move
+
+		vector<vector<char>> stateArr(states);
+		
+		cout << endl << "State array allocated" << endl;
+		for (int i=0; i < states; i++){
+			vector<char> altBoard(sqr, sqr+9); 
+			
+			for (int j = 0; j < 9; j++)
+			{
+				altBoard[j] = square[j];
+				cout << endl << altBoard[j] << endl;
+			}
+			
+			cout << endl << "empty spot:" << esq[i] << endl;
+
+			altBoard[esq[i]] = 'Y';
+
+			cout << endl << "filled spot:" << altBoard[esq[i]] << endl;
+
+			for (int j = 0; j < 9; j ++)
+				stateArr[i].push_back(altBoard[j]);
+
+			cout << endl << "added state:" << stateArr[i][esq[i]] << endl;
+
+		}
+
+		// displays altered board states
+		for (int i=0; i < states; i++){
+			cout << endl << "Game state:" << i << endl;
+			display(stateArr[i]);
+		}
+
+		// keep for now, eventually replace with minimax steps
+
+		box = esq[rand() % states];
 	}
 
 	return box;
@@ -139,6 +180,7 @@ int validateMove(int p){
 
 	int box;
 
+	cout << endl << "intake 1" << endl;// reaches here
 	box = intakeMove(p);
 	while (true)
 	{
@@ -147,6 +189,7 @@ int validateMove(int p){
 			if (p == 1)
 				cout << "please enter a valid tile [0, 8]" << '\n';
 
+			cout << "intake error" << endl;
 			box = intakeMove(p);
 			continue;
 		}
