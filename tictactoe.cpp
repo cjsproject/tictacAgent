@@ -1,5 +1,6 @@
 #include <iostream>
 #include <limits>
+#include <vector>
 
 #include <stdlib.h>
 #include <time.h>
@@ -94,6 +95,29 @@ void display()
 		}
 }
 
+void minim(){return;}
+
+void maxim(){return;}
+
+int eval(){
+	/*evaluates current board score*/
+	return 0;
+
+}
+
+vector<int> get_empty(){
+
+	vector<int> eboxes;
+	for (int i=0; i < 9; i++){
+		if (square[i] != 'X' && square[i] != 'Y')
+			eboxes.push_back(square[i] - '0'); // converts ascii int value to numeric.
+	}
+
+	return eboxes;
+}
+
+int minimax(){return 0;}
+
 int intakeMove(int p){
 	int box;
 
@@ -116,14 +140,16 @@ int validateMove(int p){
 	int box;
 
 	box = intakeMove(p);
-	cout << box << '\n';
 	while (true){
 		if ((box < 0 || box > 8) ||  (square[box] == 'X' || square[box] == 'Y')){
-			cout << box << '\n';
-			cout << "please enter a valid tile [0, 8]" << '\n';
+			if (p == 1)
+				cout << "please enter a valid tile [0, 8]" << '\n';
+
 			box = intakeMove(p);
 			continue;
 		}
+		if (p == 2)
+			cout << box << endl;
 		break;
 	}
 	return box;
@@ -137,7 +163,6 @@ int main()
 		
 		for(int i=1;i<5;i++)
 	{
-
 		cout<< "\n Player " << player1 << "Enter the Box";
 
 		box = validateMove(player1);
@@ -165,7 +190,7 @@ int main()
 		mark (player2, box);
 		display();
 		
-		result =checkwin();	
+		result = checkwin();	
 		if (result == 1 )
 		{	cout<<"\n Congratualtions! player " << player1 << " has Won ";
 			flag = 1;
@@ -177,9 +202,18 @@ int main()
 			flag = 1;
 			break;
 		}
+
+		cout << endl;
+		
+		vector<int> esq = get_empty();
+		for (int j = 0; j < int(esq.size()); j++)
+			cout << esq[j];
+			
+		cout << endl;
+		
 }
 		if (flag == 0 )
-		cout<<" \n Sorry, The game is a draw ";
+			cout<<" \n Sorry, The game is a draw ";
 	
 	return 0;
 }
