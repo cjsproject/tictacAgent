@@ -9,6 +9,7 @@ using namespace std;
 char sqr[9] = {'0','1','2','3','4','5','6','7','8'};
 vector<char> square(sqr, sqr + 9);
 
+vector<int> get_empty(vector<char>);
 
 int checkwin()
 {
@@ -95,12 +96,24 @@ void minim(){return;}
 
 void maxim(){return;}
 
-int eval(int p)
+int eval(int p, vector<char> sq = square)
 {
 	/*evaluates end state of certain tree. ie win/lose/draw state*/
 
+	int score = 0;
 
-	return 0;
+	vector<int> unoccupiedSq = get_empty(sq);
+
+	for (int i=0; i < int(unoccupiedSq.size()); i++){
+		if (unoccupiedSq[i] == 4)
+			score += 5;
+		if (unoccupiedSq[i] == 0 || unoccupiedSq[i] == 2 || unoccupiedSq[i] == 6 || unoccupiedSq[i] == 8 )
+			score += 3;
+		else
+			score += 1;
+	}
+
+	return score;
 
 }
 
@@ -116,6 +129,35 @@ vector<int> get_empty(vector<char> sq = square)
 }
 
 int minimax(){return 0;}
+
+vector<vector<char>> nextStates(vector<char> state = square)
+{
+
+	vector<int> esq = get_empty();
+	int states = int(esq.size());
+
+	vector<vector<char>> statesArr(states);
+
+	cout << endl << "State array allocated" << endl;
+
+	for (int i=0; i < states; i++)
+	{
+		vector<char> altBoard(sqr, sqr+9); 
+		
+		for (int j = 0; j < 9; j++)
+			altBoard[j] = square[j];
+		
+		cout << endl << "empty spot:" << esq[i] << endl;
+
+		altBoard[esq[i]] = 'Y';
+
+		cout << endl << "filled spot:" << altBoard[esq[i]] << endl;
+
+		for (int j = 0; j < 9; j ++)
+			statesArr[i].push_back(altBoard[j]);
+	}
+	return statesArr;
+}
 
 int intakeMove(int p)
 {
@@ -133,43 +175,37 @@ int intakeMove(int p)
 
 		vector<int> esq = get_empty();
 		int states = int(esq.size());
+
 		// attempt at acquiring all next board states
 		// gather array of board states, display them all at each move
-
-		vector<vector<char>> stateArr(states);
+		vector<vector<char>> stateArr = nextStates();
 		
-		cout << endl << "State array allocated" << endl;
-		for (int i=0; i < states; i++){
-			vector<char> altBoard(sqr, sqr+9); 
-			
-			for (int j = 0; j < 9; j++)
-			{
-				altBoard[j] = square[j];
-				cout << endl << altBoard[j] << endl;
-			}
-			
-			cout << endl << "empty spot:" << esq[i] << endl;
-
-			altBoard[esq[i]] = 'Y';
-
-			cout << endl << "filled spot:" << altBoard[esq[i]] << endl;
-
-			for (int j = 0; j < 9; j ++)
-				stateArr[i].push_back(altBoard[j]);
-
-			cout << endl << "added state:" << stateArr[i][esq[i]] << endl;
-
-		}
-
-		// displays altered board states
-		for (int i=0; i < states; i++){
+		// displays each potential board state
+		for (int i=0; i < states; i++)
+		{
 			cout << endl << "Game state:" << i << endl;
 			display(stateArr[i]);
 		}
 
+		// evaluates utility of each board state
+		// allocate a score for each state
+		int maxidx = 0;
+		int maxScore = eval(p, stateArr[0]);
+		for (int i=1; i < states; i++)
+		{
+			int score = eval(p, stateArr[i]);
+			if (score < maxScore)
+			{
+				maxidx = i;
+				maxScore = score;
+			}
+		}
+
+
+		cout << endl << "max score:" << maxScore << endl;
 		// keep for now, eventually replace with minimax steps
 
-		box = esq[rand() % states];
+		box = esq[maxidx];
 	}
 
 	return box;
