@@ -4,12 +4,15 @@
 
 #include <stdlib.h>
 #include <time.h>
+#include <math.h>
 
 using namespace std;
 char sqr[9] = {'0','1','2','3','4','5','6','7','8'};
 vector<char> square(sqr, sqr + 9);
 
 vector<int> get_empty(vector<char>);
+vector<vector<char>> nextStates(int, vector<char>);
+
 
 int checkwin()
 {
@@ -85,6 +88,7 @@ void mark(int player, int box)
 
 void display(vector<char> sq = square)
 {
+	cout << endl;
 	for(int i=0; i<9; i++){
 		cout << sq[i] << "\t";
 		if (i == 2 || i== 5 || i==8)
@@ -128,36 +132,76 @@ vector<int> get_empty(vector<char> sq = square)
 	return eboxes;
 }
 
-int minimax(){return 0;}
 
-vector<vector<char>> nextStates(vector<char> state = square)
+int minimax(int p = 2, int d = 1, vector<char> state = square)
+{
+	vector<int> esq = get_empty(state);
+	int states = int(esq.size());
+
+	// attempt at acquiring all next board states
+	// gather vector of board states, display them all at each move
+	vector<vector<char>> stateArr = nextStates(p, state);
+
+	int plyr;
+
+	if (states % 2 == 1)
+		plyr = 2;
+	else if (states %2 == 0)
+		plyr = 1;
+
+	if (d > 0)
+	{
+		for (int i=0; i < states; i++)
+		{
+			minimax(plyr, d-1, stateArr[i]);
+		}
+
+	}	
+	
+	cout << endl << "player:" << p << endl;
+	display(stateArr[0]);
+	for (int i=0; i < states; i++)
+		cout << esq[i] << ", ";
+
+	cout << endl;
+	
+	
+	return 0;
+	
+}
+
+
+vector<vector<char>> nextStates(int p, vector<char> state = square)
 {
 
-	vector<int> esq = get_empty();
+	vector<int> esq = get_empty(state);
 	int states = int(esq.size());
 
 	vector<vector<char>> statesArr(states);
-
-	cout << endl << "State array allocated" << endl;
 
 	for (int i=0; i < states; i++)
 	{
 		vector<char> altBoard(sqr, sqr+9); 
 		
 		for (int j = 0; j < 9; j++)
-			altBoard[j] = square[j];
+			altBoard[j] = state[j];
 		
-		cout << endl << "empty spot:" << esq[i] << endl;
+		// cout << endl << "empty spot:" << esq[i] << "player:" << p << endl;
 
-		altBoard[esq[i]] = 'Y';
+		// mark square with the appropriate player's piece
+		if (p == 2)
+			altBoard[esq[i]] = 'Y';
+		else if (p == 1)
+			altBoard[esq[i]] = 'X';
 
-		cout << endl << "filled spot:" << altBoard[esq[i]] << endl;
+		// cout << endl << "filled spot:" << altBoard[esq[i]] << endl;
 
 		for (int j = 0; j < 9; j ++)
 			statesArr[i].push_back(altBoard[j]);
 	}
 	return statesArr;
 }
+
 
 int intakeMove(int p)
 {
@@ -174,13 +218,8 @@ int intakeMove(int p)
 		srand(time(NULL));
 
 		vector<int> esq = get_empty();
-		int states = int(esq.size());
 
-		// attempt at acquiring all next board states
-		// gather array of board states, display them all at each move
-		vector<vector<char>> stateArr = nextStates();
-		
-		// displays each potential board state
+		/* displays each potential board state
 		for (int i=0; i < states; i++)
 		{
 			cout << endl << "Game state:" << i << endl;
@@ -204,8 +243,10 @@ int intakeMove(int p)
 
 		cout << endl << "max score:" << maxScore << endl;
 		// keep for now, eventually replace with minimax steps
+		*/
 
-		box = esq[maxidx];
+		minimax();
+		box = esq[0];//maxidx];
 	}
 
 	return box;
@@ -216,7 +257,6 @@ int validateMove(int p){
 
 	int box;
 
-	cout << endl << "intake 1" << endl;// reaches here
 	box = intakeMove(p);
 	while (true)
 	{
@@ -234,6 +274,7 @@ int validateMove(int p){
 	
 		break;
 	}
+	cout << endl << "move validated" << endl;// reaches here
 	return box;
 }
 
