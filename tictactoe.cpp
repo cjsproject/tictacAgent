@@ -2,6 +2,11 @@
 #include <limits>
 #include <vector>
 
+#include <algorithm>
+#include <iostream>
+#include <cmath>
+
+
 #include <stdlib.h>
 #include <time.h>
 #include <math.h>
@@ -14,6 +19,8 @@ vector<char> square(sqr, sqr + 9);
 vector<int> get_empty(vector<char>);
 vector<vector<char>> nextStates(int, vector<char>);
 int eval(int, vector<char>);
+int maxim(int, vector<char>);
+int minim(int, vector<char>);
 
 
 
@@ -99,41 +106,63 @@ void display(vector<char> sq = square)
 	}
 }
 
-void minim(int p, int states, vector<vector<char>> sArr, int &minidx, int &minScore)
-{
 
-	minidx = 0;
-	minScore = eval(p, sArr[0]);
-	for (int i=1; i < states; i++)
-	{
-		int score = eval(p, sArr[i]);
-		if (score < minScore)
-		{
-			minidx = i;
-			minScore = score;
-		}
-	}
-	//cout << endl << "max score:" << maxScore << endl;
-	
-	return;
+int min(int a, int b)
+{
+	if (a < b)
+		return a;
+	else 
+		return b;
 }
 
 
-void maxim(int p, int states, vector<vector<char>> sArr, int &maxidx, int &maxScore)
+int minim(int p, vector<char> state)
 {
-	maxidx = 0;
-	maxScore = eval(p, sArr[0]);
+	if (checkwin(state) != 0)
+		return eval(p, state);
+
+	vector<vector<char>> sArr = nextStates(p, state);
+	int states = int(sArr.size());
+
+	int v;
+
 	for (int i=1; i < states; i++)
 	{
-		int score = eval(p, sArr[i]);
-		if (score > maxScore)
-		{
-			maxidx = i;
-			maxScore = score;
-		}
+		v = eval(p, sArr[i]);
+		v = min(v, maxim(p, sArr[i]));
+
 	}
-	//cout << endl << "max score:" << maxScore << endl;
-	return;
+
+	return v;
+}
+
+int max(int a, int b)
+{
+	if (a > b)
+		return a;
+	else 
+		return b;
+}
+
+
+int maxim(int p, vector<char> state)
+{
+	if (checkwin(state) != 0)
+		return eval(p, state);
+
+	vector<vector<char>> sArr = nextStates(p, state);
+	int states = int(sArr.size());
+
+	int v;
+
+	for (int i=1; i < states; i++)
+	{
+		v = eval(p, sArr[i]);
+		v = max(v, minim(p, sArr[i]));
+
+	}
+
+	return v;
 }
 
 int eval(int p, vector<char> sq = square)
@@ -145,6 +174,10 @@ int eval(int p, vector<char> sq = square)
 	if (winner != 0){
 		cout << endl << "winner: " << winner << "Player: " << p << endl;
 		display(sq);
+		if (winner != 2)
+			return -100;
+		else
+			return 100;
 	}
 		
 
@@ -152,9 +185,9 @@ int eval(int p, vector<char> sq = square)
 
 	for (int i=0; i < int(unoccupiedSq.size()); i++){
 		if (p == winner)
-			score += 10;
+			score += 100;
 		if (winner != 0 && p != winner)
-			score -= 10;
+			score -= 100;
 		if (unoccupiedSq[i] == 4)
 			score += 5;
 		if (unoccupiedSq[i] == 0 || unoccupiedSq[i] == 2 || unoccupiedSq[i] == 6 || unoccupiedSq[i] == 8 )
@@ -187,6 +220,7 @@ int minimax(int p = 2, int d = 2, vector<char> state = square, int minimaxidx=-1
 	int states = int(esq.size());
 
 	cout << endl << "player:" << p << endl;
+	display(state);
 
 	// attempt at acquiring all next board states
 	// gather vector of board states, display them all at each move
@@ -197,31 +231,23 @@ int minimax(int p = 2, int d = 2, vector<char> state = square, int minimaxidx=-1
 	else if (states %2 == 0)
 		plyr = 1;
 
-	if ((d > 0 && d < 9))
-	{
-		cout << endl << "minimax Score: " << minimaxScore;
-		if (plyr==1)
-			minim(p, states, stateArr, minimaxidx, minimaxScore);
-		else
-			maxim(p, states, stateArr, minimaxidx, minimaxScore);
 
-		cout << endl << "Score after :" << minimaxScore << endl;
-
-		for (int i=0; i < states; i++)
-		{
-			minimax(plyr, d-1, stateArr[i], minimaxidx, minimaxScore);
-		}
-
-	}	
-	
-	/*
-	cout << endl << "player:" << p << endl;
-	display(stateArr[0]);
+	vector<int> scores(states);
+	vector<int>::iterator result;
 	for (int i=0; i < states; i++)
-		cout << esq[i] << ", ";
-	cout << endl;*/
-	
-	
+	{
+		int boardScore = minim(plyr, stateArr[i]);
+		scores[i] = boardScore;
+	}
+
+
+	result = max_element(scores.begin(), scores.end());
+	minimaxidx = distance(scores.begin(), result);
+	minimaxScore = scores[minimaxidx];
+
+	cout << endl << "score " << minimaxScore << " at index : " << minimaxidx << endl;
+
+
 	return minimaxidx;
 	
 }
