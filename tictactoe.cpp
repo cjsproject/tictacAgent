@@ -7,69 +7,72 @@
 #include <math.h>
 
 using namespace std;
+
 char sqr[9] = {'0','1','2','3','4','5','6','7','8'};
 vector<char> square(sqr, sqr + 9);
 
 vector<int> get_empty(vector<char>);
 vector<vector<char>> nextStates(int, vector<char>);
+int eval(int, vector<char>);
 
 
-int checkwin()
+
+int checkwin(vector<char> sq = square)
 {
-	if (square[0] == square [1]  && square[1] == square[2] ){
-		if ( square [0] == 'X' )			
+	if (sq[0] == sq[1]  && sq[1] == sq[2] ){
+		if ( sq[0] == 'X' )			
 			return 1;
 		else
 			return 2; 
 	}		
-	else if (square[3] == square [4]  && square[4] == square[5] ){
-		if ( square [3] == 'X' )			
+	else if (sq[3] == sq[4]  && sq[4] == sq[5] ){
+		if ( sq[3] == 'X' )			
 			return 1;
 		else
 			return 2; 
 	}
-	else if (square[6] == square [7]  && square[7] == square[8] ){
-		if ( square [6] == 'X' )			
+	else if (sq[6] == sq[7]  && sq[7] == sq[8] ){
+		if ( sq[6] == 'X' )			
 			return 1;
 		else
 			return 2; 
 	}
-	else if (square[0] == square [3]  && square[3] == square[6] ){
-		if ( square [0] == 'X' )			
+	else if (sq[0] == sq[3]  && sq[3] == sq[6] ){
+		if ( sq[0] == 'X' )			
 			return 1;
 		else
 			return 2; 
 	}
-	else if (square[1] == square [4]  && square[4] == square[7] ){
-		if ( square [1] == 'X' )			
+	else if (sq[1] == sq[4]  && sq[4] == sq[7] ){
+		if ( sq[1] == 'X' )			
 			return 1;
 		else
 			return 2; 
 	}
-	else if (square[2] == square [5]  && square[5] == square[8])
+	else if (sq[2] == sq[5]  && sq[5] == sq[8])
 	{	
-		if ( square [2] == 'X' )			
+		if ( sq[2] == 'X' )			
 			return 1;
 		else
 			return 2; 
 		}
-	else if (square[0] == square [4]  && square[4] == square[8] )
+	else if (sq[0] == sq[4]  && sq[4] == sq[8] )
 	{
-		if ( square [0] == 'X' )			
+		if ( sq[0] == 'X' )			
 			return 1;
 		else
 			return 2; 
 		}
-	else if (square[2] == square [4]  && square[4] == square[6] )
+	else if (sq[2] == sq [4]  && sq[4] == sq[6] )
 	{
-		if ( square [2] == 'X' )			
+		if ( sq[2] == 'X' )			
 			return 1;
 		else
 			return 2; 
 		}
-	else if (square[0] == square [3]  && square[3] == square[6] )
+	else if (sq[0] == sq[3]  && sq[3] == sq[6] )
 	{
-		if ( square [0] == 'X' )			
+		if ( sq[0] == 'X' )			
 			return 1;
 			else
 			return 2; 
@@ -96,19 +99,62 @@ void display(vector<char> sq = square)
 	}
 }
 
-void minim(){return;}
+void minim(int p, int states, vector<vector<char>> sArr, int &minidx, int &minScore)
+{
 
-void maxim(){return;}
+	minidx = 0;
+	minScore = eval(p, sArr[0]);
+	for (int i=1; i < states; i++)
+	{
+		int score = eval(p, sArr[i]);
+		if (score < minScore)
+		{
+			minidx = i;
+			minScore = score;
+		}
+	}
+	//cout << endl << "max score:" << maxScore << endl;
+	
+	return;
+}
+
+
+void maxim(int p, int states, vector<vector<char>> sArr, int &maxidx, int &maxScore)
+{
+	maxidx = 0;
+	maxScore = eval(p, sArr[0]);
+	for (int i=1; i < states; i++)
+	{
+		int score = eval(p, sArr[i]);
+		if (score > maxScore)
+		{
+			maxidx = i;
+			maxScore = score;
+		}
+	}
+	//cout << endl << "max score:" << maxScore << endl;
+	return;
+}
 
 int eval(int p, vector<char> sq = square)
 {
-	/*evaluates end state of certain tree. ie win/lose/draw state*/
-
+	/*evaluates utility function of given board*/
 	int score = 0;
+
+	int winner = checkwin(sq);
+	if (winner != 0){
+		cout << endl << "winner: " << winner << "Player: " << p << endl;
+		display(sq);
+	}
+		
 
 	vector<int> unoccupiedSq = get_empty(sq);
 
 	for (int i=0; i < int(unoccupiedSq.size()); i++){
+		if (p == winner)
+			score += 10;
+		if (winner != 0 && p != winner)
+			score -= 10;
 		if (unoccupiedSq[i] == 4)
 			score += 5;
 		if (unoccupiedSq[i] == 0 || unoccupiedSq[i] == 2 || unoccupiedSq[i] == 6 || unoccupiedSq[i] == 8 )
@@ -133,40 +179,50 @@ vector<int> get_empty(vector<char> sq = square)
 }
 
 
-int minimax(int p = 2, int d = 1, vector<char> state = square)
+int minimax(int p = 2, int d = 2, vector<char> state = square, int minimaxidx=-1, int minimaxScore=-1)
 {
+	int plyr;
+
 	vector<int> esq = get_empty(state);
 	int states = int(esq.size());
+
+	cout << endl << "player:" << p << endl;
 
 	// attempt at acquiring all next board states
 	// gather vector of board states, display them all at each move
 	vector<vector<char>> stateArr = nextStates(p, state);
-
-	int plyr;
 
 	if (states % 2 == 1)
 		plyr = 2;
 	else if (states %2 == 0)
 		plyr = 1;
 
-	if (d > 0)
+	if ((d > 0 && d < 9))
 	{
+		cout << endl << "minimax Score: " << minimaxScore;
+		if (plyr==1)
+			minim(p, states, stateArr, minimaxidx, minimaxScore);
+		else
+			maxim(p, states, stateArr, minimaxidx, minimaxScore);
+
+		cout << endl << "Score after :" << minimaxScore << endl;
+
 		for (int i=0; i < states; i++)
 		{
-			minimax(plyr, d-1, stateArr[i]);
+			minimax(plyr, d-1, stateArr[i], minimaxidx, minimaxScore);
 		}
 
 	}	
 	
+	/*
 	cout << endl << "player:" << p << endl;
 	display(stateArr[0]);
 	for (int i=0; i < states; i++)
 		cout << esq[i] << ", ";
-
-	cout << endl;
+	cout << endl;*/
 	
 	
-	return 0;
+	return minimaxidx;
 	
 }
 
@@ -245,8 +301,9 @@ int intakeMove(int p)
 		// keep for now, eventually replace with minimax steps
 		*/
 
-		minimax();
-		box = esq[0];//maxidx];
+		int move = minimax();
+		cout << endl << "move from minimax: " << esq[move] << endl;
+		box = esq[move];//maxidx];
 	}
 
 	return box;
