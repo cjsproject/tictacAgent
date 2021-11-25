@@ -18,13 +18,10 @@ vector<char> square(sqr, sqr + 9);
 
 vector<int> get_empty(vector<char>);
 vector<vector<char>> nextStates(int, vector<char>);
-int eval(int, vector<char>);
-int maxim(int, vector<char>);
-int minim(int, vector<char>);
+float eval(int, vector<char>);
 
 
-
-int checkwin(vector<char> sq = square)
+int checkwin(vector<char> sq = square) // checks if given board has a winner
 {
 	if (sq[0] == sq[1]  && sq[1] == sq[2] ){
 		if ( sq[0] == 'X' )			
@@ -88,7 +85,8 @@ int checkwin(vector<char> sq = square)
 		return 0;
 }
 
-void mark(int player, int box)
+
+void mark(int player, int box) // marks current board state at given box for player
 {
 	if (player == 1)
 		square[box] = 'X';
@@ -96,7 +94,8 @@ void mark(int player, int box)
 		square[box] = 'Y';
 }
 
-void display(vector<char> sq = square)
+
+void display(vector<char> sq = square) // displays the current board in command line
 {
 	cout << endl;
 	for(int i=0; i<9; i++){
@@ -107,100 +106,23 @@ void display(vector<char> sq = square)
 }
 
 
-int min(int a, int b)
+float eval(int winner) // returns an integer value based on the eval function
 {
-	if (a < b)
-		return a;
-	else 
-		return b;
-}
-
-
-int minim(int p, vector<char> state)
-{
-	if (checkwin(state) != 0)
-		return eval(p, state);
-
-	vector<vector<char>> sArr = nextStates(p, state);
-	int states = int(sArr.size());
-
-	int v;
-
-	for (int i=1; i < states; i++)
+	switch (winner)
 	{
-		v = eval(p, sArr[i]);
-		v = min(v, maxim(p, sArr[i]));
-
+	case 0:
+		return 0;	
+	case 1:
+		return -1;
+	case 2:
+		return 1;
+	default:
+		return 0;
 	}
-
-	return v;
-}
-
-int max(int a, int b)
-{
-	if (a > b)
-		return a;
-	else 
-		return b;
-}
-
-
-int maxim(int p, vector<char> state)
-{
-	if (checkwin(state) != 0)
-		return eval(p, state);
-
-	vector<vector<char>> sArr = nextStates(p, state);
-	int states = int(sArr.size());
-
-	int v;
-
-	for (int i=1; i < states; i++)
-	{
-		v = eval(p, sArr[i]);
-		v = max(v, minim(p, sArr[i]));
-
-	}
-
-	return v;
-}
-
-int eval(int p, vector<char> sq = square)
-{
-	/*evaluates utility function of given board*/
-	int score = 0;
-
-	int winner = checkwin(sq);
-	if (winner != 0){
-		cout << endl << "winner: " << winner << "Player: " << p << endl;
-		display(sq);
-		if (winner != 2)
-			return -100;
-		else
-			return 100;
-	}
-		
-
-	vector<int> unoccupiedSq = get_empty(sq);
-
-	for (int i=0; i < int(unoccupiedSq.size()); i++){
-		if (p == winner)
-			score += 100;
-		if (winner != 0 && p != winner)
-			score -= 100;
-		if (unoccupiedSq[i] == 4)
-			score += 5;
-		if (unoccupiedSq[i] == 0 || unoccupiedSq[i] == 2 || unoccupiedSq[i] == 6 || unoccupiedSq[i] == 8 )
-			score += 3;
-		else
-			score += 1;
-	}
-
-	return score;
 
 }
 
-vector<int> get_empty(vector<char> sq = square)
+vector<int> get_empty(vector<char> sq = square) // returns given board's empty squares as indices
 {
 	vector<int> eboxes;
 	for (int i=0; i < 9; i++)
@@ -211,81 +133,46 @@ vector<int> get_empty(vector<char> sq = square)
 	return eboxes;
 }
 
-
-int minimax(int p = 2, int d = 2, vector<char> state = square, int minimaxidx=-1, int minimaxScore=-1)
+ // reference: https://github.com/CodingTrain/website/blob/main/CodingChallenges/CC_154_Tic_Tac_Toe_Minimax/P5/minimax.js
+float minimax(bool ismax, int d, vector<char> state = square) // returns index of highest scored move
 {
-	int plyr;
-
-	vector<int> esq = get_empty(state);
-	int states = int(esq.size());
-
-	cout << endl << "player:" << p << endl;
-	display(state);
-
-	// attempt at acquiring all next board states
-	// gather vector of board states, display them all at each move
-	vector<vector<char>> stateArr = nextStates(p, state);
-
-	if (states % 2 == 1)
-		plyr = 2;
-	else if (states %2 == 0)
-		plyr = 1;
-
-
-	vector<int> scores(states);
-	vector<int>::iterator result;
-	for (int i=0; i < states; i++)
-	{
-		int boardScore = minim(plyr, stateArr[i]);
-		scores[i] = boardScore;
-	}
-
-
-	result = max_element(scores.begin(), scores.end());
-	minimaxidx = distance(scores.begin(), result);
-	minimaxScore = scores[minimaxidx];
-
-	cout << endl << "score " << minimaxScore << " at index : " << minimaxidx << endl;
-
-
-	return minimaxidx;
+	int win = checkwin(state);
+	//cout << endl << get_empty(state).size() << endl;
+	if (get_empty(state).size() == 1)
+		return (float) eval(win)/d;
 	
-}
-
-
-vector<vector<char>> nextStates(int p, vector<char> state = square)
-{
-
-	vector<int> esq = get_empty(state);
-	int states = int(esq.size());
-
-	vector<vector<char>> statesArr(states);
-
-	for (int i=0; i < states; i++)
+	vector<int> esq = get_empty(state); //gives possible moves at actual current board state
+	int states = esq.size();
+	
+	
+	if (ismax)
 	{
-		vector<char> altBoard(sqr, sqr+9); 
-		
-		for (int j = 0; j < 9; j++)
-			altBoard[j] = state[j];
-		
-		// cout << endl << "empty spot:" << esq[i] << "player:" << p << endl;
+		float bestScore = -INFINITY;
+		for (int i=0; i < states; i++){
 
-		// mark square with the appropriate player's piece
-		if (p == 2)
-			altBoard[esq[i]] = 'Y';
-		else if (p == 1)
-			altBoard[esq[i]] = 'X';
+			state[esq[i]] = 'Y';
+			float score = minimax(false, d+1, state); // returns the optimal score from minimax
+			state[esq[i]] = '0' + esq[i];
 
-		// cout << endl << "filled spot:" << altBoard[esq[i]] << endl;
+			bestScore = max(score, bestScore);
+		}
+		return bestScore;
+	} else
+	{
+		float bestScore = INFINITY;
+		for (int i=0; i < states; i++){
 
-		for (int j = 0; j < 9; j ++)
-			statesArr[i].push_back(altBoard[j]);
+			state[esq[i]] = 'X';
+			float score = minimax(true, d+1, state); // returns the optimal score from minimax
+			state[esq[i]] = '0' + esq[i];
+			bestScore = min(score, bestScore);
+		}
+		return bestScore;
 	}
-	return statesArr;
 }
 
 
-int intakeMove(int p)
+int intakeMove(int p) // takes user input move or generates minimax move
 {
 	int box;
 
@@ -297,47 +184,34 @@ int intakeMove(int p)
 	}
 	else if (p == 2)
 	{
-		srand(time(NULL));
+		vector<int> esq = get_empty(); //gives possible moves at actual current board state
+		int states = esq.size();
+		vector<char> board = square;
 
-		vector<int> esq = get_empty();
+		float bestScore = -INFINITY;
+		int bestMove;
+		for (int i=0; i < states; i++){
 
-		/* displays each potential board state
-		for (int i=0; i < states; i++)
-		{
-			cout << endl << "Game state:" << i << endl;
-			display(stateArr[i]);
-		}
-
-		// evaluates utility of each board state
-		// allocate a score for each state
-		int maxidx = 0;
-		int maxScore = eval(p, stateArr[0]);
-		for (int i=1; i < states; i++)
-		{
-			int score = eval(p, stateArr[i]);
-			if (score < maxScore)
+			board[esq[i]] = 'Y';
+			float score = minimax(false, 0, board); // returns the optimal score from minimax
+			board[esq[i]] = '0' + esq[i];
+			if (score > bestScore)
 			{
-				maxidx = i;
-				maxScore = score;
+				bestScore = score;
+				bestMove = i;
 			}
 		}
 
-
-		cout << endl << "max score:" << maxScore << endl;
-		// keep for now, eventually replace with minimax steps
-		*/
-
-		int move = minimax();
-		cout << endl << "move from minimax: " << esq[move] << endl;
-		box = esq[move];//maxidx];
+		cout << endl << "move from minimax: " << bestMove << " score: " << bestScore << endl;
+		box = esq[bestMove];
 	}
 
 	return box;
-
 }
 
-int validateMove(int p){
 
+int validateMove(int p) // validates the given move (user input/minimax), checks if within range 0-9 and if tile is open
+{
 	int box;
 
 	box = intakeMove(p);
@@ -350,20 +224,18 @@ int validateMove(int p){
 
 			cout << "intake error" << endl;
 			box = intakeMove(p);
-			continue;
-		}
-		if (p == 2)
-			cout << box << endl;
-	
+			continue; // continues loop and checks new input
+		}	
 		break;
 	}
-	cout << endl << "move validated" << endl;// reaches here
+	cout << endl << "move validated" << endl; // reaches here when move is valid
 	return box;
 }
 
+
 int main()
 {
-	int player1 = 1, player2 = 2 ;
+	int player1 = 1, player2 = 2;
 	
 	int box = -1, result = 0, flag = 0;
 	
@@ -408,19 +280,10 @@ int main()
 			cout<<"\n Congratualtions! player " << player2 << " has Won ";
 			flag = 1;
 			break;
-		}
-
-		cout << endl;
-		
-		vector<int> esq = get_empty();
-		for (int j = 0; j < int(esq.size()); j++)
-			cout << esq[j];
-			
-		cout << endl;
-		
-}
-		if (flag == 0 )
-			cout <<" \n Sorry, The game is a draw ";
+		}		
+	}
+	if (flag == 0 )
+		cout <<" \n Sorry, The game is a draw ";
 	
 	return 0;
 }
