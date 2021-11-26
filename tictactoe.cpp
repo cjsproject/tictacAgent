@@ -91,7 +91,7 @@ void mark(int player, int box) // marks current board state at given box for pla
 	if (player == 1)
 		square[box] = 'X';
 	else
-		square[box] = 'Y';
+		square[box] = 'O';
 }
 
 
@@ -113,11 +113,11 @@ float eval(int winner) // returns an integer value based on the eval function
 	case 0:
 		return 0;	
 	case 1:
-		return -1;
+		return 10;
 	case 2:
-		return 1;
+		return -10;
 	default:
-		return 0;
+		return 1;
 	}
 
 }
@@ -127,7 +127,7 @@ vector<int> get_empty(vector<char> sq = square) // returns given board's empty s
 	vector<int> eboxes;
 	for (int i=0; i < 9; i++)
 	{
-		if (sq[i] != 'X' && sq[i] != 'Y')
+		if (sq[i] != 'X' && sq[i] != 'O')
 			eboxes.push_back(sq[i] - '0'); // converts ascii int value to numeric.
 	}
 	return eboxes;
@@ -138,7 +138,7 @@ float minimax(bool ismax, int d, vector<char> state = square) // returns index o
 {
 	int win = checkwin(state);
 	//cout << endl << get_empty(state).size() << endl;
-	if (get_empty(state).size() == 1)
+	if (get_empty(state).size() == 0)
 		return (float) eval(win)/d;
 	
 	vector<int> esq = get_empty(state); //gives possible moves at actual current board state
@@ -150,7 +150,7 @@ float minimax(bool ismax, int d, vector<char> state = square) // returns index o
 		float bestScore = -INFINITY;
 		for (int i=0; i < states; i++){
 
-			state[esq[i]] = 'Y';
+			state[esq[i]] = 'X';
 			float score = minimax(false, d+1, state); // returns the optimal score from minimax
 			state[esq[i]] = '0' + esq[i];
 
@@ -162,7 +162,7 @@ float minimax(bool ismax, int d, vector<char> state = square) // returns index o
 		float bestScore = INFINITY;
 		for (int i=0; i < states; i++){
 
-			state[esq[i]] = 'X';
+			state[esq[i]] = 'O';
 			float score = minimax(true, d+1, state); // returns the optimal score from minimax
 			state[esq[i]] = '0' + esq[i];
 			bestScore = min(score, bestScore);
@@ -176,13 +176,13 @@ int intakeMove(int p) // takes user input move or generates minimax move
 {
 	int box;
 
-	if (p == 1)
+	if (p == 2)
 	{
 		cin >> box;
 		cin.clear();
 		cin.ignore(numeric_limits<streamsize>::max(), '\n');
 	}
-	else if (p == 2)
+	else if (p == 1)
 	{
 		vector<int> esq = get_empty(); //gives possible moves at actual current board state
 		int states = esq.size();
@@ -192,7 +192,7 @@ int intakeMove(int p) // takes user input move or generates minimax move
 		int bestMove;
 		for (int i=0; i < states; i++){
 
-			board[esq[i]] = 'Y';
+			board[esq[i]] = 'X';
 			float score = minimax(false, 0, board); // returns the optimal score from minimax
 			board[esq[i]] = '0' + esq[i];
 			if (score > bestScore)
