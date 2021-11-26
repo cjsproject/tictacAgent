@@ -113,11 +113,11 @@ float eval(int winner) // returns an integer value based on the eval function
 	case 0:
 		return 0;	
 	case 1:
-		return 10;
-	case 2:
-		return -10;
-	default:
 		return 1;
+	case 2:
+		return -1;
+	default:
+		return 0;
 	}
 
 }
@@ -138,7 +138,7 @@ float minimax(bool ismax, int d, vector<char> state = square) // returns index o
 {
 	int win = checkwin(state);
 	//cout << endl << get_empty(state).size() << endl;
-	if (get_empty(state).size() == 0)
+	if (d == 4 || get_empty(state).size() == 0)
 		return (float) eval(win)/d;
 	
 	vector<int> esq = get_empty(state); //gives possible moves at actual current board state
